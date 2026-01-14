@@ -99,6 +99,7 @@ class ZqiXYW:
         assert imag.dtype == object
         result = ZqiXYW(n,p,q)
         result.coeff_form = np.stack([real,imag], axis=0)
+        return result
 
     
 

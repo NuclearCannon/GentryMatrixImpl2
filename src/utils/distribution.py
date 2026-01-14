@@ -89,6 +89,23 @@ def generate_zo(shape):
     
     return arr.reshape(shape)
 
+
+def random_complex_array(shape, bound=1.0):
+    """
+    生成一个指定形状的 NumPy 数组，其中每个元素是一个模不超过 bound 的随机复数。
+    """
+    if bound < 0:
+        raise ValueError("bound 必须是非负数。")
+    # 生成随机模长：在 [0, bound] 范围内均匀分布
+    r = np.random.uniform(0, bound, size=shape)
+    # 生成随机角度：在 [0, 2π) 范围内均匀分布
+    theta = np.random.uniform(0, 2 * np.pi, size=shape)
+    # 转换为复数
+    real = r * np.cos(theta)
+    imag = r * np.sin(theta)
+    return real + 1j * imag
+
+
 # 示例使用
 if __name__ == "__main__":
     # 测试HWT分布
