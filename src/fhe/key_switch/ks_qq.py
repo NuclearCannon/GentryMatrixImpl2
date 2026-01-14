@@ -10,7 +10,7 @@ class KeySwitchingKey:
     def __init__(
             self, 
             sk_from: ZqiXYW, sk_to: ZqiXYW, 
-            params: dict, 
+            n, p, q,
             B:int = 16,
             no_error_ksk = False,
             no_a_part_ksk = False
@@ -18,12 +18,10 @@ class KeySwitchingKey:
                  
     ):
         """生成KSK(sk_from->sk_to)"""
+        self.n = n
+        self.p = p
+        self.q = q
         # 实际上，加密qo * sk_from * B^k 为密文，以q*qo为模数
-        n = params["n"]
-        p = params["p"]
-
-        self.params = params
-        q = params["q"]
         # 我们把KS过程放到一个更大的模数Q上去进行，而不是q
         # 我们选择的参数Q,B,L需要满足：
         # 1.原来的a(mod q)能被(B,L)分解，也就是说，B^L>q
@@ -58,9 +56,9 @@ class KeySwitchingKey:
 
     def key_switch_big(self, a:ZqiXYW, b:ZqiXYW|None = None):
         # 准备参数
-        n = self.params["n"]
-        p = self.params["p"]
-        q = self.params["q"]
+        n = self.n
+        p = self.p
+        q = self.q
         Q = self.Q
 
 

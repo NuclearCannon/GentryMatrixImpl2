@@ -34,7 +34,7 @@ sk2 = polynomial.poly_sk(n,p,q,h)
 ksk = KeySwitchingKey(
     sk_from=sk2,
     sk_to=sk,
-    params=params,
+    n=n,p=p,q=q,
     no_error_ksk=False,
     no_a_part_ksk=False
 )

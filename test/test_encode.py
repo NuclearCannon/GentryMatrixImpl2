@@ -1,4 +1,3 @@
-# 本文件意在测试KeySwitch的误差程度，以及之前所有内容的正确性
 import numpy as np
 import sys
 import os

@@ -220,9 +220,9 @@ class ZqiXYW:
         self._ensure_half_form_exists()
         other._ensure_half_form_exists()
         n,p,q = self.npq()
-        result = np.zeros((2,n,n,p-1))    # 结果的half形式
+        result = np.zeros((2,n,n,p-1), dtype=object)    # 结果的half形式
         A = self.half_form
-        B = self.half_form
+        B = other.half_form
         assert isinstance(A, np.ndarray)
         assert isinstance(B, np.ndarray)
         assert A.shape == B.shape == (2,n,n,p-1)
@@ -238,7 +238,10 @@ class ZqiXYW:
             result[0,:,:,i] = ap @ bp % q
             result[1,:,:,i] = an @ bn % q
 
-        return ZqiXYW(n,p,q,half=result)
+        result %= q
+
+        result = ZqiXYW(n,p,q,half=result)
+        return result
     
 
 
