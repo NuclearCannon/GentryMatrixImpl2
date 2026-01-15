@@ -174,9 +174,10 @@ class ZqiXYW:
         if valid:
             return result
         else:
-            logger.log("Warning: __add__中两个多项式没有共同表示形式，我们不得不确保去转化为系数形式")
-            self._ensure_coeff_form_exists()
-            other._ensure_coeff_form_exists()
+            logger.log("Warning: __add__中两个多项式没有共同表示形式，我们不得不确保转化为NTT形式")
+            # NTT是最通用的形式，让我们在大部分情况下使用纯NTT表示
+            self._ensure_ntt_form_exists()
+            other._ensure_ntt_form_exists()
             return self + other # 重新执行一次
         
     
@@ -221,9 +222,32 @@ class ZqiXYW:
         return ZqiXYW(self.n, self.p, self.q, ntt=result_ntt)
 
 
+    def circledast(self, other: "ZqiXYW", hint="half", force=None):
+        # N+N -> N
+        # H+H -> H
+        # 都有/都没有->hint
+        if force == "ntt":
+            return self.circledast_on_ntt_form(other)
+        if force == "half":
+            return self.circledast_on_half_form(other)
         
+        N1 = self.ntt_form is not None
+        N2 = other.ntt_form is not None
+        H1 = self.half_form is not None
+        H2 = other.half_form is not None
+        N = N1 and N2
+        H = H1 and H2
+        if N and not H:
+            return self.circledast_on_ntt_form(other)
+        elif H and not N:
+            return self.circledast_on_half_form(other)
+        elif hint == "half":
+            return self.circledast_on_half_form(other)
+        else:
+            return self.circledast_on_ntt_form(other)
 
-    def circledast(self, other: "ZqiXYW"):
+
+    def circledast_on_half_form(self, other: "ZqiXYW"):
         assert self.like(other)
         assert self.q is not None
         # half形式是有利于circledast的
@@ -245,13 +269,44 @@ class ZqiXYW:
             ap, an = a[0], a[1]
             bp, bn = b[1].T, b[0].T         # 在这里对B共轭转置
             # 做矩阵乘法
-            result[0,:,:,i] = ap @ bp % q
-            result[1,:,:,i] = an @ bn % q
+            result[0,:,:,i] = ap @ bp % q   # (+,-) (+,-) => (+,-)
+            result[1,:,:,i] = an @ bn % q   # (-,+) (-,+) => (-,+)
 
         result %= q
 
         result = ZqiXYW(n,p,q,half=result)
         return result
+    
+    def circledast_on_ntt_form(self, other: "ZqiXYW"):
+        """一种可以直接在NTT形式上进行Circledast运算的方法"""
+        assert self.like(other)
+        self._ensure_ntt_form_exists()
+        other._ensure_ntt_form_exists()
+        n,p,q = self.npq()
+        result = np.zeros((2,n,n,p-1), dtype=object)    # 结果的half形式
+        A = self.ntt_form
+        B = other.ntt_form
+        assert isinstance(A, np.ndarray)
+        assert isinstance(B, np.ndarray)
+        assert A.shape == B.shape == (2,n,n,p-1)
+
+        for i in range(p-1):
+            # 对self的第i个W分量和other的第p-2-i个W分量进行2d circledast，结果放在result[:,:,:,i]中
+            a = A[:,:,:,i]
+            b = B[:,:,:,p-2-i]   # B: Y->Y^{-1}
+            # 提取P,N分量
+            ap, an = a[0], a[1]
+            bp, bn = b[1].T, b[0].T         # 在这里对B共轭转置
+            # 做矩阵乘法
+            result[0,:,:,i] = ap @ bp % q
+            result[1,:,:,i] = an @ bn % q
+
+        result *= pow(n,-1,q)
+        result %= q
+
+        result = ZqiXYW(n,p,q,ntt=result)
+        return result
+
     
     def __eq__(self, other: "ZqiXYW"):
         assert self.like(other)
