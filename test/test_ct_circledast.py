@@ -1,6 +1,7 @@
 import numpy as np
 import sys
 import os
+import cProfile
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 utils_dir = os.path.join(current_dir, "../")
@@ -40,9 +41,11 @@ poly2 = polynomial.poly_coeff_bound(n,p,q,10)
 ct1 = fhe.encrypt_XYW(poly1, sk, no_error=True) # 我们不关心加密本身造成的误差
 ct2 = fhe.encrypt_XYW(poly2, sk, no_error=True) # 
 
-
-
+pr = cProfile.Profile()
+pr.enable()
 ct3 = fhe.circledast_ct(ct1, ct2, ksks)
+pr.disable()
+pr.dump_stats('output.prof')  # 保存为 .prof 文件
 
 poly3 = fhe.decrypt_XYW(ct3[0], ct3[1], sk)
 poly3_pt = poly1.circledast(poly2)
