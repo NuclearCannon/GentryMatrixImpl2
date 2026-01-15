@@ -6,7 +6,10 @@ class ZqiXYW:
     """
         多项式环Zq[i][X,Y,W]/(X^n-i, Y^n+i, Phi_p(W))
     """
-    def __init__(self, n:int, p:int, q:int|None = None, **kwargs) -> None:
+    def __init__(self, n:int, p:int, q:int, **kwargs) -> None:
+        assert isinstance(n,int)
+        assert isinstance(p,int)
+        assert isinstance(q,int)
         allowed_keys = {'coeff', 'ntt', 'half', 'zero', 'uniform'}  # 允许的关键字参数
         invalid_keys = set(kwargs) - allowed_keys
         if invalid_keys:
@@ -43,22 +46,26 @@ class ZqiXYW:
             for j in range(n):
                 P[i,j,:] = ntt_W(P[i,j,:], p, q)
                 N[i,j,:] = ntt_W(N[i,j,:], p, q)
-        return np.stack([P,N], axis=0)
+        result = np.stack([P,N], axis=0) % q
+        return result
     
     @staticmethod
     def _iw_intt(half_form, n, p, q):
         I = get_mathcal_I(n,q)
         P = half_form[0]
         N = half_form[1]
+        P2 = np.zeros_like(P)
+        N2 = np.zeros_like(N)
         # P: (X^n-I, Y^n+I, Phi_p(W))
         # N: (X^n+I, Y^n-I, Phi_p(W))
         for i in range(n):
             for j in range(n):
-                P[i,j,:] = intt_W(P[i,j,:], p, q)
-                N[i,j,:] = intt_W(N[i,j,:], p, q)
-        real = (P+N)*pow(2,-1,q)%q
-        imag = (P-N)*pow(2*I,-1,q)%q
-        return np.stack([real,imag], axis=0)
+                P2[i,j,:] = intt_W(P[i,j,:], p, q)
+                N2[i,j,:] = intt_W(N[i,j,:], p, q)
+        real = (P2+N2)*pow(2,-1,q)%q
+        imag = (P2-N2)*pow(2*I,-1,q)%q
+        result = np.stack([real,imag], axis=0) % q
+        return result
     
     @staticmethod
     def _xy_ntt(half_form, n, p, q):
@@ -88,7 +95,7 @@ class ZqiXYW:
 
 
     @classmethod
-    def from_real_imag(cls, real:np.ndarray, imag: np.ndarray, n:int, p:int, q:int|None = None):
+    def from_real_imag(cls, real:np.ndarray, imag: np.ndarray, n:int, p:int, q:int):
         """生成一个多项式，它的实部和虚部分别由一个(shape=(n,n,p-1),dtype=object)的ndarray给出"""
         # 检查输入
         assert isinstance(real, np.ndarray)
@@ -140,8 +147,10 @@ class ZqiXYW:
             kwargs["coeff"] = - self.coeff_form
         if self.half_form is not None:
             kwargs["half"] = - self.half_form
-        if self.ntt_form is not None:
+        elif self.ntt_form is not None:
             kwargs["ntt"] = - self.ntt_form
+        else:
+            raise ValueError("__neg__: self是三无多项式")
         return ZqiXYW(n,p,q,**kwargs)
         
     def __sub__(self, other):
@@ -243,6 +252,13 @@ class ZqiXYW:
         result = ZqiXYW(n,p,q,half=result)
         return result
     
+    def __eq__(self, other: "ZqiXYW"):
+        assert self.like(other)
+        error = self.to_coeff() - other.to_coeff()
+        if self.q:
+            error %= self.q
+        return (error == 0).all()
+        
 
 
     
