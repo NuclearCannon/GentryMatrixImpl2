@@ -1,6 +1,7 @@
 import numpy as np
 from .NTT.ntt_i import ntt_mathcal_I, intt_mathcal_I, ntt_W, intt_W, get_mathcal_I
 from ..utils.distribution import generate_uniform
+from ..utils import logger
 
 class ZqiXYW:
     """
@@ -173,7 +174,7 @@ class ZqiXYW:
         if valid:
             return result
         else:
-            print("Warning: __add__中两个多项式没有共同表示形式，我们不得不确保去转化为系数形式")
+            logger.log("Warning: __add__中两个多项式没有共同表示形式，我们不得不确保去转化为系数形式")
             self._ensure_coeff_form_exists()
             other._ensure_coeff_form_exists()
             return self + other # 重新执行一次
