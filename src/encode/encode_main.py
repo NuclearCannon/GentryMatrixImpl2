@@ -49,33 +49,33 @@ class Encoder:
 
     def _encode_3d(self, arr, delta):
         n, p = self.n, self.p
-        assert arr.shape == (n,n,p-1)
-        result_r = np.zeros(shape=(n, n, p-1), dtype=object)
-        result_i = np.zeros(shape=(n, n, p-1), dtype=object)
+        assert arr.shape == (p-1,n,n)
+        result_r = np.zeros(shape=(p-1,n,n), dtype=object)
+        result_i = np.zeros(shape=(p-1,n,n), dtype=object)
 
-        tmp = np.zeros(shape=(n,n,p-1), dtype=complex)
+        tmp = np.zeros(shape=(p-1,n,n), dtype=complex)
         # 先做W-iDFT
         for i in range(n):
             for j in range(n):
-                tmp[i,j,:] = DFT.naive_idft_W_complex(arr[i,j,:], p)
+                tmp[:,i,j] = DFT.naive_idft_W_complex(arr[:,i,j], p)
 
         # 在对每个W分量做
         for k in range(p-1):
-            r,i = self._encode_2d(tmp[:,:,k], delta)
-            result_r[:,:,k] = r
-            result_i[:,:,k] = i
+            r,i = self._encode_2d(tmp[k,:,:], delta)
+            result_r[k,:,:] = r
+            result_i[k,:,:] = i
         return result_r, result_i
 
     def _decode_3d(self, real, imag):
         n, p = self.n, self.p
-        tmp = np.zeros(shape=(n,n,p-1), dtype=complex)
-        result = np.zeros(shape=(n,n,p-1), dtype=complex)
+        tmp = np.zeros(shape=(p-1,n,n), dtype=complex)
+        result = np.zeros(shape=(p-1,n,n), dtype=complex)
 
         for k in range(p-1):
-            tmp[:,:,k] = self._decode_2d(real[:,:,k], imag[:,:,k])
+            tmp[k,:,:] = self._decode_2d(real[k,:,:], imag[k,:,:])
         for i in range(n):
             for j in range(n):
-                result[i,j,:] = DFT.naive_dft_W_complex(tmp[i,j,:], p)
+                result[:,i,j] = DFT.naive_dft_W_complex(tmp[:,i,j], p)
         return result
     
 

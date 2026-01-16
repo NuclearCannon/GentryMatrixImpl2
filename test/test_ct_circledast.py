@@ -56,7 +56,7 @@ error = error.to_coeff()
 error %= q
 error[error>(q//2)] -= q
 
-print(f"error=\n{error[0,:,:,0]}")
+print(f"error=\n{error[0,0,:,:]}")
 error = np.max(np.abs(error))
 
 print(f"error={error}")

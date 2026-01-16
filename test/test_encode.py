@@ -25,7 +25,7 @@ delta = 1000
 
 encoder = Encoder(n,p,q)
 
-mat = utils.distribution.random_complex_array((n,n,p-1), 1)
+mat = utils.distribution.random_complex_array((p-1,n,n), 1)
 mat_sq = mat * mat
 
 poly = encoder.encode_to_polynomial(mat, delta)

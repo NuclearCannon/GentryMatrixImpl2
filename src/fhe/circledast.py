@@ -3,8 +3,8 @@ import numpy as np
 from ..polynomial import ZqiXYW
 
 def _auto_W(poly, n, p):
-    assert poly.shape == (2, n, n, p-1)
-    tmp = np.zeros(shape=(2, n, n, p-1), dtype=object)
+    assert poly.shape == (2, p-1, n, n)
+    tmp = np.zeros(shape=(2, p-1, n, n), dtype=object)
     for i in range(p-1):
         # 移动poly的W^i分量到为W^{-i}
         # 考虑到W^p=1, 可以认为W^{-i}=W^{p-i}
@@ -12,9 +12,9 @@ def _auto_W(poly, n, p):
         if j == p-1:
             # 这就麻烦了。W^{p-1} = - (W^{p-2}+W^{p-3}+...+W^1+W^0)
             for k in range(p-1):
-                tmp[:,:,:,k] -= poly[:,:,:,i]
+                tmp[:,k,:,:] -= poly[:,i,:,:]
         else:
-            tmp[:,:,:,j] += poly[:,:,:,i]
+            tmp[:,j,:,:] += poly[:,i,:,:]
     return tmp
 
 
@@ -22,8 +22,8 @@ def create_ksks_for_circledast(sk: ZqiXYW, n, p, q):
     """为circledast_ct准备KSK"""
     # 获取sk的系数形式
     s_coeff = sk.to_coeff()
-    assert (s_coeff[:,:,1:,:] == 0).all(), "sk必须与Y无关！"
-    s_coeff_T = s_coeff.transpose(0,2,1,3)  # 转置
+    assert (s_coeff[:,:,:,1:] == 0).all(), "sk必须与Y无关！"
+    s_coeff_T = s_coeff.transpose(0,1,3,2)  # 转置
     s_coeff_T[1] *= -1  # 共轭
     s_coeff_T = _auto_W(s_coeff_T, n, p)    # W->W^{-1}
 

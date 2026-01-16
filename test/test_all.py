@@ -27,9 +27,9 @@ delta = 10000
 
 encoder = Encoder(n,p,q)
 
-mat1 = utils.distribution.random_complex_array((n,n,p-1), 10)
+mat1 = utils.distribution.random_complex_array((p-1,n,n), 10)
 poly1 = encoder.encode_to_polynomial(mat1, delta)
-mat2 = utils.distribution.random_complex_array((n,n,p-1), 10)
+mat2 = utils.distribution.random_complex_array((p-1,n,n), 10)
 poly2 = encoder.encode_to_polynomial(mat2, delta)
 
 ct1 = fhe.encrypt_XYW(poly1, sk)
@@ -41,7 +41,7 @@ poly3 = fhe.decrypt_XYW(ct3[0], ct3[1], sk)
 # circledast得到的是A@B.conj().T/n，需要补一个n才能得到乘法结果
 mat3 = encoder.decode_from_polynomial(poly3) / (delta ** 2) * n
 
-mat3_real = np.einsum('ijm,kjm->ikm', mat1, mat2.conj(), optimize=True)
+mat3_real = np.einsum('mij,mkj->mik', mat1, mat2.conj(), optimize=True)
 
 error = mat3 - mat3_real
 
