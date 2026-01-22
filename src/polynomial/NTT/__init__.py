@@ -1,5 +1,5 @@
 import numpy as np
-from ...param_gen import find_primitive_root, find_zeta, find_eta
+from ...param_gen import find_zeta, find_eta
 from ... import utils
 
 from functools import lru_cache

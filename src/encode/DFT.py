@@ -1,7 +1,7 @@
 # 本文件实现DFT
 import numpy as np
 import random
-from ..param_gen import find_primitive_root
+from ..utils import primitive_root
 
 def naive_dft_XY_complex(arr, n, using_conj_zetas=False):
     assert len(arr) == n
@@ -36,7 +36,7 @@ def naive_idft_XY_complex(arr, n, using_conj_zetas=False):
 
 def naive_dft_W_complex(arr, p):
     assert len(arr) == p-1
-    gamma = find_primitive_root(p)
+    gamma = primitive_root(p)
     results = []
     eta = np.exp(2j * np.pi / p)    # 满足eta^p=1
     for k in range(1,p):
@@ -49,7 +49,7 @@ def naive_dft_W_complex(arr, p):
 
 def naive_idft_W_complex(arr, p):
     assert len(arr) == p-1
-    gamma = find_primitive_root(p)
+    gamma = primitive_root(p)
     tmps = []
     eta = np.exp(2j * np.pi / p)
     for j in range(p-1):

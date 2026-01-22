@@ -1,4 +1,4 @@
-from . import find_primitive_root, ntt_standard, find_eta
+from . import ntt_standard, find_eta
 
 from . import utils
 
@@ -9,7 +9,7 @@ def convolve_standard(a, b, q):
     """基于ntt_standard的卷积函数设计"""
     n = len(a)
     assert len(b) == n, "两个参数的长度必须相等"
-    gq = find_primitive_root(q)
+    gq = utils.primitive_root(q)
     if n.bit_count() == 1:
         # n是一个power of 2，可以正常运行
         
@@ -43,7 +43,7 @@ def ntt_rader(f, p, q, inverse=False):
     assert utils.isprime(p)
     assert utils.isprime(q)
     # gp: 质数p的生成元
-    gp = find_primitive_root(p)
+    gp = utils.primitive_root(p)
     # gp的各个次幂
     gp_pows = utils.get_powers(gp, p, p)
     # 找eta: 模q意义下的p阶本原单位根

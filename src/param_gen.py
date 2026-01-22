@@ -3,52 +3,11 @@ from functools import lru_cache
 from . import utils
 import math
 
-@lru_cache(maxsize=None)
-def _find_primitive_root_inner(q):
-    assert utils.isprime(q)
-    def prime_factors(n):
-        """返回 n 的所有不同质因数（无重复）"""
-        factors = set()
-        d = 2
-        while d * d <= n:
-            while n % d == 0:
-                factors.add(d)
-                n //= d
-            d += 1
-        if n > 1:
-            factors.add(n)
-        return list(factors)
-    if q == 2:
-        return 1  # 特殊情况
-
-    phi = q - 1
-    factors = prime_factors(phi)
-
-    for g in range(2, q):
-        is_primitive = True
-        for p in factors:
-            if pow(g, phi // p, q) == 1:
-                is_primitive = False
-                break
-        if is_primitive:
-            return g
-
-    # 理论上不会执行到这里（因为质数一定有原根）
-    raise ValueError(f"未找到模 {q} 的生成元")
-
-def find_primitive_root(q: int) -> int:
-    """
-    找到模质数 q 下的一个生成元（primitive root modulo q）
-    假设 q 是质数。
-    本函数会自动cache结果
-    """
-    return _find_primitive_root_inner(q)
-
 
 @lru_cache(maxsize=None)
 def _find_zeta_inner(n, q):
     assert (q-1)%(4*n) == 0, f"q={q}, n={n}"
-    g = find_primitive_root(q)
+    g = utils.primitive_root(q)
     zeta = pow(g, (q-1)//(4*n), q)
     assert pow(zeta, 2*n, q) == q-1
     return zeta
@@ -60,7 +19,7 @@ def find_zeta(n:int, q:int) -> int:
 @lru_cache(maxsize=None)
 def _find_eta_inner(p, q):
     assert (q-1)%p == 0
-    g = find_primitive_root(q)
+    g = utils.primitive_root(q)
     eta = pow(g, (q-1)//p, q)
     assert pow(eta, p, q) == 1
     return eta
@@ -115,5 +74,5 @@ def check_param(n: int, p: int, q:int):
 
 
 __all__ = [
-    "find_primitive_root", "find_zeta", "find_eta", "param_find_q", "check_param"
+    "find_zeta", "find_eta", "param_find_q", "check_param"
 ]

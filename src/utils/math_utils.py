@@ -25,3 +25,13 @@ def next_power_of_two(x: int) -> int:
 @lru_cache(maxsize=None)
 def get_powers(zeta:int, N:int, q:int) -> tuple[int, ...]:
     return tuple(pow(zeta, j, q) for j in range(N))
+
+
+@lru_cache(maxsize=None)
+def _primitive_root_inner(x: int) -> int:
+    r = sympy.primitive_root(x)
+    assert isinstance(r, int)
+    return r
+
+def primitive_root(q):
+    return _primitive_root_inner(q)
