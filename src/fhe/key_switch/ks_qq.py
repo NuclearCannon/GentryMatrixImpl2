@@ -46,7 +46,7 @@ class KeySwitchingKey:
             if not (abs(m)<q).all():
                 print("Warning: KSK生成: sk_from越过了q")
             m %= q
-            m = (m * Q) // q
+            m = (m * Q + (q//2)) // q
             m %= Q
             m2 = ZqiXYW(n,p,Q,coeff=m)   # 转为多项式对象
             sk_a, sk_b = encrypt_XYW(m2, sk_to_Q, no_error=no_error_ksk, no_a_part=no_a_part_ksk)
